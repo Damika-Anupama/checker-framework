@@ -1,6 +1,5 @@
 package org.checkerframework.checker.index.upperbound;
 
-import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
@@ -62,23 +61,8 @@ public class UpperBoundChecker extends BaseTypeChecker {
   /** The UpperBoundLiteral.value element/field. */
   public @MonotonicNonNull ExecutableElement upperBoundLiteralValueElement;
 
-  /**
-   * These collection classes have some subtypes whose length can change and some subtypes whose
-   * length cannot change. Warnings are skipped at uses of them.
-   */
-  private final HashSet<String> collectionBaseTypeNames;
-
   /** Create a new UpperBoundChecker. */
-  public UpperBoundChecker() {
-    // These classes are bases for both mutable and immutable sequence collections, which
-    // contain methods that change the length.
-    // Upper bound checker warnings are skipped at uses of them.
-    Class<?>[] collectionBaseClasses = {java.util.List.class, java.util.AbstractList.class};
-    collectionBaseTypeNames = new HashSet<>(collectionBaseClasses.length);
-    for (Class<?> collectionBaseClass : collectionBaseClasses) {
-      collectionBaseTypeNames.add(collectionBaseClass.getName());
-    }
-  }
+  public UpperBoundChecker() {}
 
   @Override
   public void initChecker() {
@@ -97,9 +81,6 @@ public class UpperBoundChecker extends BaseTypeChecker {
 
   @Override
   public boolean shouldSkipUses(@FullyQualifiedName String typeName) {
-    if (collectionBaseTypeNames.contains(typeName)) {
-      return true;
-    }
     return super.shouldSkipUses(typeName);
   }
 
