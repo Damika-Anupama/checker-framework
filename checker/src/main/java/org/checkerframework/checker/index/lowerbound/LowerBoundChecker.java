@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.lowerbound;
 
+import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
@@ -32,13 +33,28 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 public class LowerBoundChecker extends BaseTypeChecker {
 
   /**
+   * These collection classes have some subtypes whose length can change and some subtypes whose
+   * length cannot change. Lower bound checker warnings are skipped at uses of them.
+   */
+  private final HashSet<String> collectionBaseTypeNames;
+
+  /**
    * A type-checker for preventing fixed-length sequences such as arrays or strings from being
    * accessed with values that are too low. Normally bundled as part of the Index Checker.
    */
-  public LowerBoundChecker() {}
+  public LowerBoundChecker() {
+    Class<?>[] collectionBaseClasses = {java.util.List.class, java.util.AbstractList.class};
+    collectionBaseTypeNames = new HashSet<>(collectionBaseClasses.length);
+    for (Class<?> collectionBaseClass : collectionBaseClasses) {
+      collectionBaseTypeNames.add(collectionBaseClass.getName());
+    }
+  }
 
   @Override
   public boolean shouldSkipUses(@FullyQualifiedName String typeName) {
+    if (collectionBaseTypeNames.contains(typeName)) {
+      return true;
+    }
     return super.shouldSkipUses(typeName);
   }
 
